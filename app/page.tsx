@@ -4,11 +4,13 @@ import { useState, useEffect, useRef } from 'react';
 import { Expense, ExpenseCategory } from '@/types/expense';
 import { storage } from '@/lib/storage';
 import { exportToCSV, importFromCSV, generateId, UncategorizedExpense } from '@/utils/expenseUtils';
+import { exportExpenses } from '@/utils/advancedExport';
 import Dashboard from '@/components/Dashboard';
 import ExpenseForm from '@/components/ExpenseForm';
 import ExpenseList from '@/components/ExpenseList';
 import ExpenseCharts from '@/components/ExpenseCharts';
 import ImportModal from '@/components/ImportModal';
+import ExportModal from '@/components/ExportModal';
 
 export default function Home() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -16,6 +18,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [isImporting, setIsImporting] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
   const [pendingExpenses, setPendingExpenses] = useState<Array<UncategorizedExpense & { index: number }>>([]);
   const [importFileName, setImportFileName] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -63,6 +66,14 @@ export default function Home() {
 
   const handleExport = () => {
     exportToCSV(expenses);
+  };
+
+  const handleAdvancedExport = async (
+    format: 'csv' | 'json' | 'pdf',
+    filteredExpenses: Expense[],
+    filename: string
+  ) => {
+    await exportExpenses(filteredExpenses, format, filename);
   };
 
   const handleImportClick = () => {
@@ -272,7 +283,7 @@ export default function Home() {
         </header>
 
         {/* Dashboard */}
-        <Dashboard expenses={expenses} />
+        <Dashboard expenses={expenses} onExportClick={() => setExportModalOpen(true)} />
 
         {/* Expense Form */}
         <div className="mb-8">
@@ -308,6 +319,14 @@ export default function Home() {
           onConfirmAll={handleConfirmImport}
           isProcessing={false}
           fileName={importFileName}
+        />
+
+        {/* Export Modal */}
+        <ExportModal
+          isOpen={exportModalOpen}
+          onClose={() => setExportModalOpen(false)}
+          expenses={expenses}
+          onExport={handleAdvancedExport}
         />
       </div>
     </div>

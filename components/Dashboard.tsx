@@ -5,9 +5,10 @@ import { calculateSummary, formatCurrency } from '@/utils/expenseUtils';
 
 interface DashboardProps {
   expenses: Expense[];
+  onExportClick: () => void;
 }
 
-export default function Dashboard({ expenses }: DashboardProps) {
+export default function Dashboard({ expenses, onExportClick }: DashboardProps) {
   const summary = calculateSummary(expenses);
 
   const summaryCards = [
@@ -40,7 +41,17 @@ export default function Dashboard({ expenses }: DashboardProps) {
 
   return (
     <div className="mb-8">
-      <h2 className="text-2xl font-bold mb-6 text-white">Dashboard</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-white">Dashboard</h2>
+        <button
+          onClick={onExportClick}
+          disabled={expenses.length === 0}
+          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl flex items-center gap-2"
+        >
+          <span className="text-lg">⚡</span>
+          Advanced Export
+        </button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {summaryCards.map((card, index) => (
           <div
