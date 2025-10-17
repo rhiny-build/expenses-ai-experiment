@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Your Expenses in 3 Easy Steps - Visual Guide</title>
+    <link rel="stylesheet" href="../documentation-styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Import Your Expenses in 3 Easy Steps</h1>
+
+        <h2>🚀 Quick Import - Save Hours of Manual Entry</h2>
+        <p>Import hundreds of expenses in seconds. Our AI automatically categorizes everything for you.</p>
+
+        <hr>
+
+        <div class="gradient-hero">
+            <h2>⚡ 3 Simple Steps to Import</h2>
+
+            <table class="steps-table">
+                <tr>
+                    <td>
+                        <div class="step-emoji">1️⃣</div>
+                        <h3>Prepare CSV</h3>
+                        <p>Create your expense file</p>
+                    </td>
+                    <td>
+                        <div class="step-emoji">2️⃣</div>
+                        <h3>Upload File</h3>
+                        <p>Click Import & select file</p>
+                    </td>
+                    <td>
+                        <div class="step-emoji">3️⃣</div>
+                        <h3>Review & Done</h3>
+                        <p>Confirm categories</p>
+                    </td>
+                </tr>
+            </table>
+
+            <p><strong>⏱️ Takes less than 5 minutes • 💡 AI does the work</strong></p>
+        </div>
+
+        <hr>
+
+        <h2>Step 1: Prepare Your CSV File</h2>
+
+        <h3>Choose Your Format</h3>
+
+        <div class="two-column">
+            <div class="option-box blue">
+                <h3>✨ Option A: Let AI Categorize (Recommended)</h3>
+                <p><strong>Just 3 columns:</strong></p>
+                <pre>Date,Amount,Description
+2025-10-01,45.50,Whole Foods grocery
+2025-10-02,12.99,Netflix subscription
+2025-10-03,65.00,Shell gas station</pre>
+                <p><strong>🤖 AI automatically suggests categories</strong></p>
+            </div>
+
+            <div class="option-box green">
+                <h3>📋 Option B: Pre-Categorized</h3>
+                <p><strong>4 columns with your categories:</strong></p>
+                <pre>Date,Category,Amount,Description
+2025-10-01,Food,45.50,Whole Foods grocery
+2025-10-02,Entertainment,12.99,Netflix
+2025-10-03,Transportation,65.00,Shell</pre>
+                <p><strong>⚡ Imports instantly, no AI needed</strong></p>
+            </div>
+        </div>
+
+        <h3>📥 Download Sample Files</h3>
+        <p>Click to download ready-to-use templates:</p>
+        <ul>
+            <li><a href="../../sample-import.csv"><strong>Download: AI Template (sample-import.csv)</strong></a> - Let AI categorize</li>
+            <li><a href="../../sample-import-with-categories.csv"><strong>Download: Pre-categorized Template (sample-import-with-categories.csv)</strong></a> - Already organized</li>
+        </ul>
+
+        <hr>
+
+        <h3>Visual Excel/Sheets Example</h3>
+        <p><strong>What your spreadsheet should look like:</strong></p>
+
+        <div class="ascii-table">┌─────────────┬──────────┬─────────────────────────────────┐
+│    Date     │  Amount  │         Description             │
+├─────────────┼──────────┼─────────────────────────────────┤
+│ 2025-10-01  │  45.50   │ Whole Foods grocery shopping    │
+│ 2025-10-02  │  12.99   │ Netflix subscription            │
+│ 2025-10-03  │  65.00   │ Shell gas station               │
+└─────────────┴──────────┴─────────────────────────────────┘
+     📅            💰                  📝</div>
+
+        <img src="images/3-excel-example.png" alt="Excel spreadsheet example with expense data" style="width: 100%; max-width: 800px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 20px auto; display: block;">
+
+        <hr>
+
+        <h2>Step 2: Upload Your File</h2>
+
+        <h3>Click the Import Button</h3>
+
+        <img src="images/1-main-dashboard-highlighted.png" alt="Main dashboard with Import CSV button highlighted" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 20px 0;">
+
+        <ol>
+            <li>Click the <strong>"📤 Import CSV"</strong> button in the top toolbar</li>
+            <li>Select your CSV file from the file picker</li>
+            <li>Wait 2-3 seconds while we process it</li>
+        </ol>
+
+        <img src="images/4-file-picker.png" alt="File picker dialog with CSV file selected" style="width: 100%; max-width: 700px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 20px auto; display: block;">
+
+        <hr>
+
+        <h2>Step 3: Review & Confirm (If Needed)</h2>
+
+        <h3>Understanding the Review Screen</h3>
+
+        <p>If AI isn't 100% confident about some categories, you'll see this screen:</p>
+
+        <img src="images/5-import-modal.png" alt="Import review modal with expense cards and confidence badges" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 20px 0;">
+
+        <p><strong>What you see in the modal:</strong></p>
+        <ul>
+            <li><strong>Confidence badges:</strong> Green (high confidence), Yellow (medium), Red (low - needs your input)</li>
+            <li><strong>Category dropdowns:</strong> Change any category by clicking the dropdown</li>
+            <li><strong>Expense details:</strong> Description, amount, and date for each item</li>
+            <li><strong>"Add Expenses" button:</strong> Enabled once all expenses have categories</li>
+        </ul>
+
+        <hr>
+
+        <h3>Confidence Levels Explained</h3>
+
+        <table class="confidence-table">
+            <tr>
+                <td class="confidence-high">
+                    <h4>🟢 High Confidence</h4>
+                    <p><strong>AI is very sure</strong></p>
+                    <p>Example: "Whole Foods" → Food</p>
+                    <p>✅ Accept suggestion</p>
+                </td>
+                <td class="confidence-medium">
+                    <h4>🟡 Medium Confidence</h4>
+                    <p><strong>AI has a good guess</strong></p>
+                    <p>Example: "Amazon order" → Shopping</p>
+                    <p>👀 Quick review recommended</p>
+                </td>
+                <td class="confidence-low">
+                    <h4>🔴 Low Confidence</h4>
+                    <p><strong>AI needs your help</strong></p>
+                    <p>Example: "Payment" → ???</p>
+                    <p>✏️ Please select category</p>
+                </td>
+            </tr>
+        </table>
+
+        <hr>
+
+        <h3>Making Changes</h3>
+
+        <p><strong>Need to change a category?</strong></p>
+
+        <ol>
+            <li>Click the dropdown menu next to the expense</li>
+            <li>Select the correct category:
+                <ul>
+                    <li>🍔 Food</li>
+                    <li>🚗 Transportation</li>
+                    <li>🎬 Entertainment</li>
+                    <li>🛍️ Shopping</li>
+                    <li>💡 Bills</li>
+                    <li>📦 Other</li>
+                </ul>
+            </li>
+            <li>Click <strong>"Add [X] Expenses"</strong> when ready</li>
+        </ol>
+
+        <img src="images/6-category-dropdown.png" alt="Category dropdown menu expanded showing all options" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 20px 0;">
+
+        <hr>
+
+        <h2>✅ Success! Your Expenses Are Imported</h2>
+
+        <p>After clicking confirm, you'll see:</p>
+        <ul>
+            <li>✅ Success notification</li>
+            <li>📊 Updated charts and visualizations</li>
+            <li>📝 All expenses in your main list</li>
+            <li>🎯 Category summaries refreshed</li>
+        </ul>
+
+        <img src="images/2-populated-dashboard.png" alt="Dashboard with imported expenses displayed" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin: 20px 0;">
+
+        <hr>
+
+        <h2>💡 Pro Tips for Best Results</h2>
+
+        <h3>✅ Good Descriptions = Better AI Categories</h3>
+
+        <table class="tips-table">
+            <tr>
+                <td class="do-this">
+                    <h3>✅ DO THIS</h3>
+                    <ul>
+                        <li>✅ "Whole Foods grocery shopping"</li>
+                        <li>✅ "Uber ride to airport"</li>
+                        <li>✅ "Netflix monthly subscription"</li>
+                        <li>✅ "Shell gas station"</li>
+                        <li>✅ "Electric bill - October"</li>
+                    </ul>
+                    <p><strong>Clear merchant + what you bought</strong></p>
+                </td>
+                <td class="avoid-this">
+                    <h3>❌ AVOID THIS</h3>
+                    <ul>
+                        <li>❌ "Store" (which store?)</li>
+                        <li>❌ "Payment" (for what?)</li>
+                        <li>❌ "Misc" (no context)</li>
+                        <li>❌ "Stuff" (too vague)</li>
+                        <li>❌ "Thing" (AI can't categorize)</li>
+                    </ul>
+                    <p><strong>Too vague for AI to understand</strong></p>
+                </td>
+            </tr>
+        </table>
+
+        <hr>
+
+        <h3>🎯 Quick Checklist Before Importing</h3>
+
+        <div class="checklist">
+            <p><strong>Before you click import, verify:</strong></p>
+            <ul>
+                <li>✅ First row is headers (Date, Amount, Description)</li>
+                <li>✅ Dates are in format: 2025-10-01 or 10/01/2025</li>
+                <li>✅ Amounts are numbers without $ or £ symbols</li>
+                <li>✅ File is saved as .csv (not .xlsx)</li>
+                <li>✅ At least one data row exists</li>
+            </ul>
+        </div>
+
+        <hr>
+
+        <h2>🆘 Quick Troubleshooting</h2>
+
+        <details>
+            <summary><strong>❌ "CSV file is empty or invalid"</strong></summary>
+            <p><strong>Problem:</strong> File has no data or wrong format</p>
+            <p><strong>Fix:</strong></p>
+            <ul>
+                <li>Check you saved as .csv (not Excel .xlsx)</li>
+                <li>Make sure you have a header row + at least one data row</li>
+                <li>Open in text editor to verify it's comma-separated</li>
+            </ul>
+        </details>
+
+        <details>
+            <summary><strong>❌ "No valid expenses found"</strong></summary>
+            <p><strong>Problem:</strong> Data doesn't match expected format</p>
+            <p><strong>Fix:</strong></p>
+            <ul>
+                <li>Dates must be valid (YYYY-MM-DD works best)</li>
+                <li>Amounts must be positive numbers (no $ symbols)</li>
+                <li>Check column order matches template</li>
+                <li>Remove empty rows</li>
+            </ul>
+        </details>
+
+        <details>
+            <summary><strong>🤖 AI categorization not working</strong></summary>
+            <p><strong>Problem:</strong> All expenses show manual review</p>
+            <p><strong>Why:</strong> AI feature may not be enabled</p>
+            <p><strong>Fix:</strong></p>
+            <ul>
+                <li>Use Option B format (pre-categorized)</li>
+                <li>Or manually select categories in review modal</li>
+            </ul>
+        </details>
+
+        <details>
+            <summary><strong>📁 Can I import Excel files?</strong></summary>
+            <p><strong>Answer:</strong> Not directly.</p>
+            <p><strong>How to convert:</strong></p>
+            <ol>
+                <li>Open your Excel file</li>
+                <li>Click "File" → "Save As"</li>
+                <li>Choose "CSV (Comma delimited)"</li>
+                <li>Save and import the CSV version</li>
+            </ol>
+        </details>
+
+        <hr>
+
+        <h2>📚 Available Categories</h2>
+
+        <p>When manually categorizing or pre-categorizing your CSV:</p>
+
+        <div class="category-grid">
+            <div class="category-card" style="background: #fff7ed;">
+                <div class="category-emoji">🍔</div>
+                <strong>Food</strong>
+                <p>Groceries, restaurants, delivery</p>
+            </div>
+
+            <div class="category-card" style="background: #f0f9ff;">
+                <div class="category-emoji">🚗</div>
+                <strong>Transportation</strong>
+                <p>Gas, parking, rideshare, public transit</p>
+            </div>
+
+            <div class="category-card" style="background: #faf5ff;">
+                <div class="category-emoji">🎬</div>
+                <strong>Entertainment</strong>
+                <p>Streaming, movies, games, hobbies</p>
+            </div>
+
+            <div class="category-card" style="background: #f0fdf4;">
+                <div class="category-emoji">🛍️</div>
+                <strong>Shopping</strong>
+                <p>Retail, online shopping, clothing</p>
+            </div>
+
+            <div class="category-card" style="background: #fffbeb;">
+                <div class="category-emoji">💡</div>
+                <strong>Bills</strong>
+                <p>Utilities, subscriptions, insurance</p>
+            </div>
+
+            <div class="category-card" style="background: #f8fafc;">
+                <div class="category-emoji">📦</div>
+                <strong>Other</strong>
+                <p>Everything else</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <h2>🔐 Privacy & Your Data</h2>
+
+        <ul>
+            <li>✅ All expenses stored <strong>locally in your browser</strong></li>
+            <li>✅ Data never sent to our servers</li>
+            <li>⚠️ AI categorization sends descriptions to OpenAI (only if enabled)</li>
+            <li>✅ No permanent storage by AI service</li>
+            <li>💡 Avoid including account numbers or sensitive info in descriptions</li>
+        </ul>
+
+        <hr>
+
+        <h2>Need More Help?</h2>
+
+        <div class="info-box">
+            <h3>📖 Additional Resources</h3>
+            <ul>
+                <li><a href="./upload%20CSV%20File.docx"><strong>Full Documentation</strong></a> - Detailed FAQ and advanced topics</li>
+                <li><a href="../TechnicalDocs/upload%20CSV%20File.md"><strong>Technical Specs</strong></a> - For developers</li>
+                <li><a href="../../"><strong>Sample Files</strong></a> - Download template files</li>
+            </ul>
+
+            <h3>💬 Still Stuck?</h3>
+            <ol>
+                <li>Press <strong>F12</strong> to open browser console for error details</li>
+                <li>Try importing one of our sample files to verify feature works</li>
+                <li>Contact support with:
+                    <ul>
+                        <li>Error message you received</li>
+                        <li>Sample CSV file (remove sensitive data)</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <hr>
+
+        <div class="footer">
+            <h2>🎉 Ready to Import?</h2>
+            <p><strong>Save hours of manual entry. Let AI do the heavy lifting.</strong></p>
+            <p>
+                <a href="../../sample-import.csv">Download Sample Template</a> •
+                <a href="#need-more-help">Get Help</a>
+            </p>
+        </div>
+
+        <hr>
+
+        <p style="text-align: center; color: #718096; font-size: 0.9em;">
+            <em>Last Updated: 2025-10-17 • Feature Version 1.0</em>
+        </p>
+    </div>
+</body>
+</html>
