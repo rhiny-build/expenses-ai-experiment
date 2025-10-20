@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ExpenseCategory } from '@/types/expense';
 import { UncategorizedExpense } from '@/utils/expenseUtils';
+import { storage } from '@/lib/storage';
 
 interface ImportModalProps {
   isOpen: boolean;
@@ -14,15 +15,6 @@ interface ImportModalProps {
   fileName?: string;
 }
 
-const CATEGORIES: ExpenseCategory[] = [
-  'Food',
-  'Transportation',
-  'Entertainment',
-  'Shopping',
-  'Bills',
-  'Other',
-];
-
 export default function ImportModal({
   isOpen,
   onClose,
@@ -32,6 +24,16 @@ export default function ImportModal({
   isProcessing,
   fileName,
 }: ImportModalProps) {
+  const [categories, setCategories] = useState<string[]>([]);
+
+  // Load active categories when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const activeCategories = storage.getActiveCategories();
+      setCategories(activeCategories.map(cat => cat.name));
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const allCategorized = expensesNeedingCategory.every(exp => exp.category);
@@ -127,7 +129,7 @@ export default function ImportModal({
                         disabled={isProcessing}
                       >
                         <option value="">Select category...</option>
-                        {CATEGORIES.map((cat) => (
+                        {categories.map((cat) => (
                           <option key={cat} value={cat}>
                             {cat}
                           </option>

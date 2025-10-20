@@ -24,30 +24,37 @@
 export type ExpenseCategory = string;
 
 /**
- * Default categories provided out of the box
+ * Default categories provided out of the box with descriptions
  * Users can add, edit, rename, or archive these
  */
-export const DEFAULT_CATEGORIES = [
-  'Food',
-  'Transportation',
-  'Entertainment',
-  'Shopping',
-  'Bills',
-  'Other'
-] as const;
+export const DEFAULT_CATEGORY_CONFIGS: Array<{name: string; description: string}> = [
+  { name: 'Food', description: 'Groceries, restaurants, cafes, food delivery' },
+  { name: 'Transportation', description: 'Gas, public transit, uber/taxi, parking, car maintenance' },
+  { name: 'Entertainment', description: 'Movies, games, concerts, streaming services, hobbies' },
+  { name: 'Shopping', description: 'Clothing, electronics, home goods, general retail' },
+  { name: 'Bills', description: 'Utilities, rent, phone, internet, insurance, subscriptions' },
+  { name: 'Other', description: 'Anything that doesn\'t clearly fit the above' }
+];
+
+/**
+ * Legacy default category names (for backwards compatibility)
+ */
+export const DEFAULT_CATEGORIES = DEFAULT_CATEGORY_CONFIGS.map(c => c.name) as unknown as readonly ['Food', 'Transportation', 'Entertainment', 'Shopping', 'Bills', 'Other'];
 
 /**
  * Category data model for category management
  *
- * Represents a category with its metadata including order and archived status.
+ * Represents a category with its metadata including order, archived status, and description.
  *
  * @property name - Display name of the category
+ * @property description - Description to help users and AI understand what belongs in this category
  * @property order - Sort order for dropdown display (lower = higher in list)
  * @property isArchived - Whether category is archived (hidden from new expense forms)
  * @property expenseCount - Number of expenses using this category (computed)
  */
 export interface Category {
   name: string;
+  description: string;
   order: number;
   isArchived: boolean;
   expenseCount?: number; // Computed field, not stored

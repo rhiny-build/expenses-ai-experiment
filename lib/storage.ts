@@ -16,7 +16,7 @@
  * - SSR-safe: checks for window to avoid errors during server-side rendering
  */
 
-import { Expense, Category, DEFAULT_CATEGORIES } from '@/types/expense';
+import { Expense, Category, DEFAULT_CATEGORY_CONFIGS } from '@/types/expense';
 
 /**
  * Storage keys for localStorage
@@ -208,8 +208,9 @@ export const storage = {
    */
   getCategories: (): Category[] => {
     if (typeof window === 'undefined') {
-      return DEFAULT_CATEGORIES.map((name, index) => ({
-        name,
+      return DEFAULT_CATEGORY_CONFIGS.map((config, index) => ({
+        name: config.name,
+        description: config.description,
         order: index,
         isArchived: false
       }));
@@ -218,12 +219,18 @@ export const storage = {
     try {
       const data = localStorage.getItem(CATEGORIES_STORAGE_KEY);
       if (data) {
-        return JSON.parse(data);
+        const categories = JSON.parse(data);
+        // Migration: add descriptions to existing categories if missing
+        return categories.map((cat: Category) => ({
+          ...cat,
+          description: cat.description || 'No description provided'
+        }));
       }
 
       // First time - initialize with defaults
-      const defaultCategories = DEFAULT_CATEGORIES.map((name, index) => ({
-        name,
+      const defaultCategories = DEFAULT_CATEGORY_CONFIGS.map((config, index) => ({
+        name: config.name,
+        description: config.description,
         order: index,
         isArchived: false
       }));
@@ -231,8 +238,9 @@ export const storage = {
       return defaultCategories;
     } catch (error) {
       console.error('Error reading categories from localStorage:', error);
-      return DEFAULT_CATEGORIES.map((name, index) => ({
-        name,
+      return DEFAULT_CATEGORY_CONFIGS.map((config, index) => ({
+        name: config.name,
+        description: config.description,
         order: index,
         isArchived: false
       }));
@@ -280,13 +288,15 @@ export const storage = {
    * Adds a new category
    *
    * @param name - Name of the new category
+   * @param description - Description of what belongs in this category
    */
-  addCategory: (name: string): void => {
+  addCategory: (name: string, description: string = 'No description provided'): void => {
     const categories = storage.getCategories();
     const maxOrder = Math.max(...categories.map(c => c.order), -1);
 
     categories.push({
       name: name.trim(),
+      description: description.trim(),
       order: maxOrder + 1,
       isArchived: false
     });
@@ -295,26 +305,43 @@ export const storage = {
   },
 
   /**
-   * Updates a category name
+   * Updates a category name and/or description
+   *
+   * @param oldName - Current name of the category
+   * @param newName - New name for the category
+   * @param newDescription - New description for the category (optional)
+   */
+  updateCategory: (oldName: string, newName: string, newDescription?: string): void => {
+    const categories = storage.getCategories();
+    const category = categories.find(c => c.name === oldName);
+
+    if (category) {
+      const nameChanged = newName.trim() !== oldName;
+      category.name = newName.trim();
+      if (newDescription !== undefined) {
+        category.description = newDescription.trim();
+      }
+      storage.saveCategories(categories);
+
+      // Update all expenses with this category if name changed
+      if (nameChanged) {
+        const expenses = storage.getExpenses();
+        const updatedExpenses = expenses.map(exp =>
+          exp.category === oldName ? { ...exp, category: newName.trim() } : exp
+        );
+        storage.saveExpenses(updatedExpenses);
+      }
+    }
+  },
+
+  /**
+   * Updates a category name (legacy method - use updateCategory instead)
    *
    * @param oldName - Current name of the category
    * @param newName - New name for the category
    */
   updateCategoryName: (oldName: string, newName: string): void => {
-    const categories = storage.getCategories();
-    const category = categories.find(c => c.name === oldName);
-
-    if (category) {
-      category.name = newName.trim();
-      storage.saveCategories(categories);
-
-      // Update all expenses with this category
-      const expenses = storage.getExpenses();
-      const updatedExpenses = expenses.map(exp =>
-        exp.category === oldName ? { ...exp, category: newName.trim() } : exp
-      );
-      storage.saveExpenses(updatedExpenses);
-    }
+    storage.updateCategory(oldName, newName);
   },
 
   /**

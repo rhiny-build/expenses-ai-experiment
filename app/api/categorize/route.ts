@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { NextRequest, NextResponse } from 'next/server';
+import { storage } from '@/lib/storage';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
@@ -45,19 +46,21 @@ export async function POST(request: NextRequest) {
     console.log('Expenses:', JSON.stringify(expenses, null, 2));
     console.log('===================================');
 
-    const prompt = `You are an expense categorization assistant. Categorize each expense into one of these categories ONLY: Food, Transportation, Entertainment, Shopping, Bills, Other.
+    // Load active categories dynamically
+    const activeCategories = storage.getActiveCategories();
+    const categoryNames = activeCategories.map(c => c.name).join(', ');
+    const categoryDescriptions = activeCategories
+      .map(c => `- ${c.name}: ${c.description}`)
+      .join('\n');
+
+    const prompt = `You are an expense categorization assistant. Categorize each expense into one of these categories ONLY: ${categoryNames}.
 
 For each expense, respond with a JSON object containing:
-- category: one of the valid categories (Food, Transportation, Entertainment, Shopping, Bills, Other), or empty string "" if you cannot confidently categorize it
+- category: one of the valid categories (${categoryNames}), or empty string "" if you cannot confidently categorize it
 - confidence: "high", "medium", or "low" based on how certain you are
 
 Categories explained:
-- Food: Groceries, restaurants, cafes, food delivery
-- Transportation: Gas, public transit, uber/taxi, parking, car maintenance
-- Entertainment: Movies, games, concerts, streaming services, hobbies
-- Shopping: Clothing, electronics, home goods, general retail
-- Bills: Utilities, rent, phone, internet, insurance, subscriptions
-- Other: Anything that doesn't clearly fit the above
+${categoryDescriptions}
 
 Expenses to categorize (${expenses.length} total):
 ${expenses.map((exp, idx) => `${idx + 1}. "${exp.description}" - £${exp.amount} on ${exp.date}`).join('\n')}
@@ -66,9 +69,9 @@ IMPORTANT: Return exactly ${expenses.length} categorization objects in the same 
 
 Respond ONLY with a valid JSON array containing exactly ${expenses.length} items, no other text. Format:
 [
-  {"category": "Food", "confidence": "high"},
+  {"category": "${activeCategories[0]?.name || 'Food'}", "confidence": "high"},
   {"category": "", "confidence": "low"},
-  {"category": "Transportation", "confidence": "medium"},
+  {"category": "${activeCategories[1]?.name || 'Transportation'}", "confidence": "medium"},
   ...
 ]`;
 

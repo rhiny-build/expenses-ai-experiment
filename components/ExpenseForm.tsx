@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { Expense, ExpenseCategory, ExpenseFormData } from '@/types/expense';
 import { generateId } from '@/utils/expenseUtils';
+import { storage } from '@/lib/storage';
 
 interface ExpenseFormProps {
   onSubmit: (expense: Expense) => void;
@@ -10,20 +11,20 @@ interface ExpenseFormProps {
   onCancel?: () => void;
 }
 
-const CATEGORIES: ExpenseCategory[] = [
-  'Food',
-  'Transportation',
-  'Entertainment',
-  'Shopping',
-  'Bills',
-  'Other',
-];
-
 export default function ExpenseForm({ onSubmit, initialData, onCancel }: ExpenseFormProps) {
+  const [categories, setCategories] = useState<string[]>([]);
+
+  // Load active categories on mount
+  useEffect(() => {
+    const activeCategories = storage.getActiveCategories();
+    const categoryNames = activeCategories.map(cat => cat.name);
+    setCategories(categoryNames);
+  }, []);
+
   const [formData, setFormData] = useState<ExpenseFormData>({
     date: initialData?.date.split('T')[0] || new Date().toISOString().split('T')[0],
     amount: initialData?.amount.toString() || '',
-    category: initialData?.category || 'Food',
+    category: initialData?.category || categories[0] || 'Food',
     description: initialData?.description || '',
   });
 
@@ -70,7 +71,7 @@ export default function ExpenseForm({ onSubmit, initialData, onCancel }: Expense
       setFormData({
         date: new Date().toISOString().split('T')[0],
         amount: '',
-        category: 'Food',
+        category: categories[0] || 'Food',
         description: '',
       });
       setErrors({});
@@ -124,7 +125,7 @@ export default function ExpenseForm({ onSubmit, initialData, onCancel }: Expense
             onChange={(e) => setFormData({ ...formData, category: e.target.value as ExpenseCategory })}
             className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            {CATEGORIES.map((category) => (
+            {categories.map((category) => (
               <option key={category} value={category}>
                 {category}
               </option>

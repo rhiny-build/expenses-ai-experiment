@@ -16,7 +16,9 @@ export default function CategoryManager({ isOpen, onClose, onCategoriesChanged }
   const [archivedCategories, setArchivedCategories] = useState<Category[]>([]);
   const [editingName, setEditingName] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [editDescriptionValue, setEditDescriptionValue] = useState('');
   const [newCategory, setNewCategory] = useState('');
+  const [newDescription, setNewDescription] = useState('');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [expenseCounts, setExpenseCounts] = useState<Record<string, number>>({});
 
@@ -37,14 +39,15 @@ export default function CategoryManager({ isOpen, onClose, onCategoriesChanged }
     setExpenseCounts(counts);
   };
 
-  const handleEdit = (name: string) => {
+  const handleEdit = (name: string, description: string) => {
     setEditingName(name);
     setEditValue(name);
+    setEditDescriptionValue(description);
   };
 
   const handleSaveEdit = (oldName: string) => {
-    if (editValue.trim() && editValue.trim() !== oldName) {
-      storage.updateCategoryName(oldName, editValue.trim());
+    if (editValue.trim()) {
+      storage.updateCategory(oldName, editValue.trim(), editDescriptionValue.trim());
       loadCategories();
       onCategoriesChanged();
     }
@@ -79,8 +82,9 @@ export default function CategoryManager({ isOpen, onClose, onCategoriesChanged }
         return;
       }
 
-      storage.addCategory(newCategory.trim());
+      storage.addCategory(newCategory.trim(), newDescription.trim() || 'No description provided');
       setNewCategory('');
+      setNewDescription('');
       loadCategories();
       onCategoriesChanged();
     }
@@ -115,6 +119,7 @@ export default function CategoryManager({ isOpen, onClose, onCategoriesChanged }
   const handleClose = () => {
     setEditingName(null);
     setNewCategory('');
+    setNewDescription('');
     setActiveTab('active');
     onClose();
   };
@@ -218,21 +223,32 @@ export default function CategoryManager({ isOpen, onClose, onCategoriesChanged }
 
                         {/* Category Info */}
                         {editingName === category.name ? (
-                          <input
-                            type="text"
-                            value={editValue}
-                            onChange={(e) => setEditValue(e.target.value)}
-                            className="flex-1 bg-slate-700 border border-slate-600 text-white px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            autoFocus
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSaveEdit(category.name);
-                              if (e.key === 'Escape') setEditingName(null);
-                            }}
-                          />
+                          <div className="flex-1 space-y-2">
+                            <input
+                              type="text"
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              className="w-full bg-slate-700 border border-slate-600 text-white px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              autoFocus
+                              placeholder="Category name"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleSaveEdit(category.name);
+                                if (e.key === 'Escape') setEditingName(null);
+                              }}
+                            />
+                            <textarea
+                              value={editDescriptionValue}
+                              onChange={(e) => setEditDescriptionValue(e.target.value)}
+                              className="w-full bg-slate-700 border border-slate-600 text-white px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+                              placeholder="Description (helps AI categorize)"
+                              rows={2}
+                            />
+                          </div>
                         ) : (
                           <div className="flex-1">
                             <div className="text-white font-semibold text-lg">{category.name}</div>
-                            <div className="text-slate-400 text-sm">
+                            <div className="text-slate-400 text-sm italic">{category.description}</div>
+                            <div className="text-slate-500 text-xs mt-1">
                               {count} expense{count !== 1 ? 's' : ''}
                             </div>
                           </div>
@@ -264,7 +280,7 @@ export default function CategoryManager({ isOpen, onClose, onCategoriesChanged }
                           ) : (
                             <>
                               <button
-                                onClick={() => handleEdit(category.name)}
+                                onClick={() => handleEdit(category.name, category.description)}
                                 className="text-blue-400 hover:text-blue-300 p-2 rounded-lg hover:bg-slate-700 transition-colors"
                                 title="Edit"
                               >
@@ -291,25 +307,33 @@ export default function CategoryManager({ isOpen, onClose, onCategoriesChanged }
 
                 {/* Add New */}
                 <div className="border-2 border-dashed border-slate-600 rounded-lg p-4 hover:border-slate-500 transition-colors">
-                  <div className="flex gap-2">
+                  <div className="space-y-2">
                     <input
                       type="text"
                       value={newCategory}
                       onChange={(e) => setNewCategory(e.target.value)}
-                      placeholder="Add new category..."
-                      className="flex-1 bg-slate-700 border border-slate-600 text-white px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
+                      placeholder="Category name..."
+                      className="w-full bg-slate-700 border border-slate-600 text-white px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleAdd();
+                        if (e.key === 'Enter' && newCategory.trim()) handleAdd();
                       }}
+                    />
+                    <textarea
+                      value={newDescription}
+                      onChange={(e) => setNewDescription(e.target.value)}
+                      placeholder="Description (helps AI categorize)..."
+                      className="w-full bg-slate-700 border border-slate-600 text-white px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400 text-sm resize-none"
+                      rows={2}
                     />
                     <button
                       onClick={handleAdd}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors font-medium flex items-center gap-2"
+                      disabled={!newCategory.trim()}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors font-medium flex items-center justify-center gap-2 disabled:bg-slate-600 disabled:cursor-not-allowed"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
-                      Add
+                      Add Category
                     </button>
                   </div>
                 </div>
@@ -339,7 +363,8 @@ export default function CategoryManager({ isOpen, onClose, onCategoriesChanged }
                           </svg>
                           <div className="flex-1">
                             <div className="text-white font-semibold">{category.name}</div>
-                            <div className="text-slate-400 text-sm">
+                            <div className="text-slate-400 text-sm italic">{category.description}</div>
+                            <div className="text-slate-500 text-xs mt-1">
                               {count} expense{count !== 1 ? 's' : ''} (archived)
                             </div>
                           </div>
