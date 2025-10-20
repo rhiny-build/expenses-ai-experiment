@@ -11,6 +11,7 @@ import ExpenseList from '@/components/ExpenseList';
 import ExpenseCharts from '@/components/ExpenseCharts';
 import ImportModal from '@/components/ImportModal';
 import ExportModal from '@/components/ExportModal';
+import CategoryManager from '@/components/CategoryManager';
 
 export default function Home() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -19,6 +20,7 @@ export default function Home() {
   const [isImporting, setIsImporting] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [categoryManagerOpen, setCategoryManagerOpen] = useState(false);
   const [pendingExpenses, setPendingExpenses] = useState<Array<UncategorizedExpense & { index: number }>>([]);
   const [importFileName, setImportFileName] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -247,6 +249,15 @@ export default function Home() {
               <p className="text-slate-300">Manage your personal finances with ease</p>
             </div>
             <div className="flex gap-3">
+              <button
+                onClick={() => setCategoryManagerOpen(true)}
+                className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 transition-colors font-medium flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                Manage Categories
+              </button>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -327,6 +338,17 @@ export default function Home() {
           onClose={() => setExportModalOpen(false)}
           expenses={expenses}
           onExport={handleAdvancedExport}
+        />
+
+        {/* Category Manager Modal */}
+        <CategoryManager
+          isOpen={categoryManagerOpen}
+          onClose={() => setCategoryManagerOpen(false)}
+          onCategoriesChanged={() => {
+            // Refresh data when categories change
+            // This ensures dropdowns and filters are updated
+            setExpenses(storage.getExpenses());
+          }}
         />
       </div>
     </div>
