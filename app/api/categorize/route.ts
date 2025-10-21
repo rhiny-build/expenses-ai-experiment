@@ -61,43 +61,32 @@ export async function POST(request: NextRequest) {
       .map(c => `- ${c.name}: ${c.description}`)
       .join('\n');
 
-    const prompt = `You are an expert expense categorization assistant. Your task is to categorize each expense transaction into the most appropriate category.
+    const prompt = `You are an expert expense categorization assistant. Follow this two-step process:
 
-AVAILABLE CATEGORIES WITH GUIDELINES:
+AVAILABLE CATEGORIES:
 ${categoryDescriptions}
 
-CATEGORIZATION RULES:
-1. Match each expense to EXACTLY ONE category from the list above
-2. USE THE CATEGORY DESCRIPTIONS ABOVE as your PRIMARY and AUTHORITATIVE guide
-3. General pattern examples (USE ONLY IF descriptions above don't provide enough guidance):
-   - "TFL", "TRANSPORT FOR", "UBER TRIP" → typically Transportation
-   - "OCADO", supermarket names, restaurant names → typically Food
-   - "BOOKING.COM", "HOTEL" → typically Entertainment (travel/leisure)
-   - "AMAZON", "M&S", retail stores → typically Shopping
-   - Subscription services → check descriptions (streaming usually Entertainment, utilities/SaaS usually Bills)
-   - Education platforms → check descriptions (usually Bills for subscriptions/services)
-   - Gym/fitness memberships → check descriptions (usually Entertainment for hobbies/activities)
-4. Confidence levels:
-   - HIGH: Clear, obvious match based on category descriptions
-   - MEDIUM: Reasonable inference needed
-   - LOW: Ambiguous or unclear - use empty category "" so user can decide
+STEP 1: GROUP BY MERCHANT
+First, analyze all ${expenses.length} transactions below and identify unique merchants (group by description field).
+For each merchant group, decide which category best matches based on the category descriptions above.
 
-EXPENSES TO CATEGORIZE (${expenses.length} total):
-${expenses.map((exp, idx) => `${idx + 1}. "${exp.description}" - £${exp.amount} on ${exp.date}`).join('\n')}
+STEP 2: APPLY CATEGORIZATION
+Apply your categorization decision to each transaction, ensuring all transactions from the same merchant get the SAME category.
 
-CRITICAL REQUIREMENTS:
-- Return EXACTLY ${expenses.length} JSON objects, one for each expense above, in the same order
-- Each object must have: {"category": "CategoryName", "confidence": "high"|"medium"|"low"}
-- If genuinely unsure, use: {"category": "", "confidence": "low"}
-- DO NOT skip any expenses - count carefully and return all ${expenses.length} results
-- Respond with ONLY valid JSON array, no markdown, no explanations
+TRANSACTIONS (${expenses.length} total):
+${JSON.stringify(expenses, null, 2)}
 
-Example format (first 3 items):
-[
-  {"category": "${activeCategories[0]?.name || 'Food'}", "confidence": "high"},
-  {"category": "", "confidence": "low"},
-  {"category": "${activeCategories[1]?.name || 'Transportation'}", "confidence": "medium"}
-]`;
+CONFIDENCE LEVELS:
+- "high": Clear merchant type, obvious category match
+- "medium": Reasonable inference needed
+- "low": Uncertain or ambiguous (use empty "" for category)
+
+OUTPUT:
+Return a JSON array with EXACTLY ${expenses.length} objects in the SAME ORDER as the input.
+Format: [{"category": "CategoryName", "confidence": "high"|"medium"|"low"}, ...]
+Valid categories: ${categoryNames}, or empty string ""
+
+Output ONLY the JSON array. No markdown, no explanations.`;
 
     console.log('=== Full Prompt Being Sent ===');
     console.log(prompt);
@@ -115,8 +104,8 @@ Example format (first 3 items):
           content: prompt,
         },
       ],
-      temperature: 0.3,
-      max_tokens: 4096, // Increased to handle larger CSV files (up to ~150 expenses)
+      temperature: 0.1, // Lower temperature for more consistent output
+      max_tokens: 8192, // Increased significantly for complete responses
     });
 
     console.log('=== OpenAI Token Usage ===');

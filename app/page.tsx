@@ -111,6 +111,7 @@ export default function Home() {
 
           // Get active categories from client-side storage
           const activeCategories = storage.getActiveCategories();
+          console.log('📋 Sending categories to API:', activeCategories);
 
           const response = await fetch('/api/categorize', {
             method: 'POST',
