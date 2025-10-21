@@ -109,6 +109,9 @@ export default function Home() {
           console.log('🤖 Calling OpenAI API to categorize', needsCategorization.length, 'expense(s)...');
           console.log('Expenses to categorize:', needsCategorization);
 
+          // Get active categories from client-side storage
+          const activeCategories = storage.getActiveCategories();
+
           const response = await fetch('/api/categorize', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -118,6 +121,7 @@ export default function Home() {
                 amount: exp.amount,
                 date: exp.date,
               })),
+              categories: activeCategories, // Send categories to server
             }),
           });
 

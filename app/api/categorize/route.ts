@@ -12,6 +12,12 @@ interface CategorizeRequest {
     amount: number;
     date: string;
   }>;
+  categories?: Array<{
+    name: string;
+    description: string;
+    order: number;
+    isArchived: boolean;
+  }>;
 }
 
 interface CategorizedExpense {
@@ -32,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body: CategorizeRequest = await request.json();
-    const { expenses } = body;
+    const { expenses, categories } = body;
 
     if (!expenses || !Array.isArray(expenses) || expenses.length === 0) {
       return NextResponse.json(
@@ -46,34 +52,56 @@ export async function POST(request: NextRequest) {
     console.log('Expenses:', JSON.stringify(expenses, null, 2));
     console.log('===================================');
 
-    // Load active categories dynamically
-    const activeCategories = storage.getActiveCategories();
+    // Use categories from request, or fall back to defaults if not provided
+    const activeCategories = categories && categories.length > 0
+      ? categories.filter(c => !c.isArchived).sort((a, b) => a.order - b.order)
+      : storage.getActiveCategories();
     const categoryNames = activeCategories.map(c => c.name).join(', ');
     const categoryDescriptions = activeCategories
       .map(c => `- ${c.name}: ${c.description}`)
       .join('\n');
 
-    const prompt = `You are an expense categorization assistant. Categorize each expense into one of these categories ONLY: ${categoryNames}.
+    const prompt = `You are an expert expense categorization assistant. Your task is to categorize each expense transaction into the most appropriate category.
 
-For each expense, respond with a JSON object containing:
-- category: one of the valid categories (${categoryNames}), or empty string "" if you cannot confidently categorize it
-- confidence: "high", "medium", or "low" based on how certain you are
-
-Categories explained:
+AVAILABLE CATEGORIES WITH GUIDELINES:
 ${categoryDescriptions}
 
-Expenses to categorize (${expenses.length} total):
+CATEGORIZATION RULES:
+1. Match each expense to EXACTLY ONE category from the list above
+2. USE THE CATEGORY DESCRIPTIONS ABOVE as your PRIMARY and AUTHORITATIVE guide
+3. General pattern examples (USE ONLY IF descriptions above don't provide enough guidance):
+   - "TFL", "TRANSPORT FOR", "UBER TRIP" → typically Transportation
+   - "OCADO", supermarket names, restaurant names → typically Food
+   - "BOOKING.COM", "HOTEL" → typically Entertainment (travel/leisure)
+   - "AMAZON", "M&S", retail stores → typically Shopping
+   - Subscription services → check descriptions (streaming usually Entertainment, utilities/SaaS usually Bills)
+   - Education platforms → check descriptions (usually Bills for subscriptions/services)
+   - Gym/fitness memberships → check descriptions (usually Entertainment for hobbies/activities)
+4. Confidence levels:
+   - HIGH: Clear, obvious match based on category descriptions
+   - MEDIUM: Reasonable inference needed
+   - LOW: Ambiguous or unclear - use empty category "" so user can decide
+
+EXPENSES TO CATEGORIZE (${expenses.length} total):
 ${expenses.map((exp, idx) => `${idx + 1}. "${exp.description}" - £${exp.amount} on ${exp.date}`).join('\n')}
 
-IMPORTANT: Return exactly ${expenses.length} categorization objects in the same order as above. If you're unsure about an item, use an empty category ("") and "low" confidence - the user will categorize it manually.
+CRITICAL REQUIREMENTS:
+- Return EXACTLY ${expenses.length} JSON objects, one for each expense above, in the same order
+- Each object must have: {"category": "CategoryName", "confidence": "high"|"medium"|"low"}
+- If genuinely unsure, use: {"category": "", "confidence": "low"}
+- DO NOT skip any expenses - count carefully and return all ${expenses.length} results
+- Respond with ONLY valid JSON array, no markdown, no explanations
 
-Respond ONLY with a valid JSON array containing exactly ${expenses.length} items, no other text. Format:
+Example format (first 3 items):
 [
   {"category": "${activeCategories[0]?.name || 'Food'}", "confidence": "high"},
   {"category": "", "confidence": "low"},
-  {"category": "${activeCategories[1]?.name || 'Transportation'}", "confidence": "medium"},
-  ...
+  {"category": "${activeCategories[1]?.name || 'Transportation'}", "confidence": "medium"}
 ]`;
+
+    console.log('=== Full Prompt Being Sent ===');
+    console.log(prompt);
+    console.log('==============================');
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
