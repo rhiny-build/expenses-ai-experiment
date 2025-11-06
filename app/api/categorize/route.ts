@@ -61,86 +61,118 @@ export async function POST(request: NextRequest) {
       .map(c => `- ${c.name}: ${c.description}`)
       .join('\n');
 
-    const prompt = `You are an expert expense categorization assistant. Follow this two-step process:
+    // Build merchant context: group expenses by merchant for consistency
+    const merchantGroups = new Map<string, number[]>();
+    expenses.forEach((exp, idx) => {
+      const merchant = exp.description.toUpperCase().trim();
+      if (!merchantGroups.has(merchant)) {
+        merchantGroups.set(merchant, []);
+      }
+      merchantGroups.get(merchant)!.push(idx);
+    });
+
+    const merchantContext = Array.from(merchantGroups.entries())
+      .map(([merchant, indices]) => `${merchant}: appears ${indices.length} time(s)`)
+      .join('\n');
+
+    // Split into batches of 40 items each for reliable processing
+    const BATCH_SIZE = 40;
+    const batches: typeof expenses[] = [];
+    for (let i = 0; i < expenses.length; i += BATCH_SIZE) {
+      batches.push(expenses.slice(i, i + BATCH_SIZE));
+    }
+
+    console.log(`📦 Processing ${expenses.length} expenses in ${batches.length} batch(es) of max ${BATCH_SIZE} items`);
+
+    const allCategorizations: Array<{category: string; confidence: string}> = [];
+
+    for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
+      const batch = batches[batchIdx];
+      const startIdx = batchIdx * BATCH_SIZE;
+
+      console.log(`\n=== Batch ${batchIdx + 1}/${batches.length} (items ${startIdx + 1}-${startIdx + batch.length}) ===`);
+
+      const numberedTransactions = batch.map((exp, idx) =>
+        `${startIdx + idx + 1}. ${exp.description} (£${exp.amount}, ${exp.date})`
+      ).join('\n');
+
+      const prompt = `You are an expert expense categorization assistant. Follow this two-step process:
 
 AVAILABLE CATEGORIES:
 ${categoryDescriptions}
 
+MERCHANT CONTEXT (for consistency across all ${expenses.length} transactions):
+${merchantContext}
+
 STEP 1: GROUP BY MERCHANT
-First, analyze all ${expenses.length} transactions below and identify unique merchants (group by description field).
+Analyze the ${batch.length} transactions below and identify unique merchants (group by description field).
 For each merchant group, decide which category best matches based on the category descriptions above.
 
 STEP 2: APPLY CATEGORIZATION
 Apply your categorization decision to each transaction, ensuring all transactions from the same merchant get the SAME category.
 
-TRANSACTIONS (${expenses.length} total):
-${JSON.stringify(expenses, null, 2)}
+TRANSACTIONS (${batch.length} items - this is batch ${batchIdx + 1} of ${batches.length}):
+${numberedTransactions}
 
 CONFIDENCE LEVELS:
 - "high": Clear merchant type, obvious category match
 - "medium": Reasonable inference needed
 - "low": Uncertain or ambiguous (use empty "" for category)
 
-OUTPUT:
-Return a JSON array with EXACTLY ${expenses.length} objects in the SAME ORDER as the input.
+OUTPUT FORMAT:
+Return a JSON array with EXACTLY ${batch.length} objects in the SAME ORDER as the numbered list above.
 Format: [{"category": "CategoryName", "confidence": "high"|"medium"|"low"}, ...]
 Valid categories: ${categoryNames}, or empty string ""
 
 Output ONLY the JSON array. No markdown, no explanations.`;
 
-    console.log('=== Full Prompt Being Sent ===');
-    console.log(prompt);
-    console.log('==============================');
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expense categorization assistant. Always respond with valid JSON only.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        temperature: 0.1,
+        max_tokens: 4096,
+      });
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expense categorization assistant. Always respond with valid JSON only.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      temperature: 0.1, // Lower temperature for more consistent output
-      max_tokens: 8192, // Increased significantly for complete responses
-    });
+      console.log(`Tokens: ${completion.usage?.prompt_tokens} prompt + ${completion.usage?.completion_tokens} completion = ${completion.usage?.total_tokens} total`);
+      console.log(`Finish reason: ${completion.choices[0].finish_reason}`);
 
-    console.log('=== OpenAI Token Usage ===');
-    console.log('Prompt tokens:', completion.usage?.prompt_tokens);
-    console.log('Completion tokens:', completion.usage?.completion_tokens);
-    console.log('Total tokens:', completion.usage?.total_tokens);
-    console.log('Finish reason:', completion.choices[0].finish_reason);
-    console.log('========================');
+      const responseText = completion.choices[0].message.content || '';
 
-    const responseText = completion.choices[0].message.content || '';
+      // Strip markdown code blocks if present
+      let cleanedResponse = responseText.trim();
+      if (cleanedResponse.startsWith('```json')) {
+        cleanedResponse = cleanedResponse.slice(7);
+      } else if (cleanedResponse.startsWith('```')) {
+        cleanedResponse = cleanedResponse.slice(3);
+      }
+      if (cleanedResponse.endsWith('```')) {
+        cleanedResponse = cleanedResponse.slice(0, -3);
+      }
+      cleanedResponse = cleanedResponse.trim();
 
-    console.log('=== OpenAI API Response ===');
-    console.log('Raw response:', responseText);
-    console.log('========================');
+      const batchCategorizations = JSON.parse(cleanedResponse);
 
-    // Strip markdown code blocks if present
-    let cleanedResponse = responseText.trim();
-    if (cleanedResponse.startsWith('```json')) {
-      cleanedResponse = cleanedResponse.slice(7); // Remove ```json
-    } else if (cleanedResponse.startsWith('```')) {
-      cleanedResponse = cleanedResponse.slice(3); // Remove ```
+      if (batchCategorizations.length !== batch.length) {
+        console.log(`⚠️  WARNING: Expected ${batch.length} categorizations, got ${batchCategorizations.length}`);
+      } else {
+        console.log(`✅ Batch ${batchIdx + 1} complete: ${batchCategorizations.length}/${batch.length}`);
+      }
+
+      allCategorizations.push(...batchCategorizations);
     }
-    if (cleanedResponse.endsWith('```')) {
-      cleanedResponse = cleanedResponse.slice(0, -3); // Remove trailing ```
-    }
-    cleanedResponse = cleanedResponse.trim();
 
-    console.log('=== Cleaned JSON ===');
-    console.log(cleanedResponse);
-    console.log('==================');
+    const categorizations = allCategorizations;
 
-    // Parse the JSON response
-    const categorizations = JSON.parse(cleanedResponse);
-
-    console.log('=== Response Validation ===');
+    console.log('\n=== Final Validation ===');
     console.log(`Expected: ${expenses.length} categorizations`);
     console.log(`Received: ${categorizations.length} categorizations`);
     console.log(`Match: ${categorizations.length === expenses.length ? 'YES ✅' : 'NO ❌'}`);
